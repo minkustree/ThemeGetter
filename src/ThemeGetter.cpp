@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
 	Main main(argc, argv);
 
-	//RefPtr<CssProvider> theme = CssProvider::get_named("HighContrast", "");
+	//RefPtr<CssProvider> theme = CssProvider::get_named("Mint-X-Purple", "");
 
 	//StyleContext::add_provider_for_screen(Gdk::Screen::get_default(), theme, GTK_STYLE_PROVIDER_PRIORITY_THEME);
 
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 	// Get theme and set up a styling context
 	RefPtr<CssProvider> theme = CssProvider::get_default();
 	RefPtr<StyleContext> styleCtx = StyleContext::create();
-	styleCtx->add_provider(theme, GTK_STYLE_PROVIDER_PRIORITY_FALLBACK);
+	styleCtx->add_provider(theme, GTK_STYLE_PROVIDER_PRIORITY_THEME);
 	styleCtx->set_screen(Gdk::Screen::get_default());
 
 	// internal dimensions
@@ -59,36 +59,51 @@ int main(int argc, char* argv[]) {
 	bwp.iter_add_class(-1, "button");
 	styleCtx->set_path(bwp);
 
+  // some pango text
+  auto layout = Pango::Layout::create(cr);
+  layout->set_text("Hello World!");
+  layout->set_font_description(styleCtx->get_font());
+  //layout->set_font_description(Pango::FontDescription("Noto Sans 10"));
+  int tw, th;
+  layout->get_pixel_size(tw, th);
+
+
+  const int h = 36;
+  const int w = 80;
+
+
 	// normal
 	styleCtx->set_state(StateFlags::STATE_FLAG_NORMAL);
-	styleCtx->render_background(cr, 200, 200, 80, 24);
-	styleCtx->render_frame(cr, 200, 200, 80, 24);
+	layout->set_font_description(styleCtx->get_font());
+	styleCtx->render_background(cr, 200, 200, w, h);
+	styleCtx->render_frame(cr, 200, 200, w, h);
+	styleCtx->render_layout(cr, 200+ ((w - tw)/2), 200 + ((h - th) /2), layout);
 
-	// focus
+	// +focus
 	styleCtx->set_state(StateFlags::STATE_FLAG_FOCUSED);
-	styleCtx->render_background(cr, 200, 300, 80, 24);
-	styleCtx->render_frame(cr, 200, 300, 80, 24);
-	styleCtx->render_focus(cr, 200, 300, 80, 24);
+	layout->set_font_description(styleCtx->get_font());
+	styleCtx->render_background(cr, 200, 300, w, h);
+	styleCtx->render_frame(cr, 200, 300, w, h);
+	styleCtx->render_focus(cr, 200, 300, w, h);
+	styleCtx->render_layout(cr, 200+ ((w - tw)/2), 300 + ((h - th) /2), layout);
 
-	// active
-	styleCtx->set_state(StateFlags::STATE_FLAG_FOCUSED | StateFlags::STATE_FLAG_ACTIVE);
-	styleCtx->render_background(cr, 200, 400, 80, 24);
-	styleCtx->render_frame(cr, 200, 400, 80, 24);
-	styleCtx->render_focus(cr, 200, 400, 80, 24);
+	// +hover
+	styleCtx->set_state(StateFlags::STATE_FLAG_FOCUSED | StateFlags::STATE_FLAG_PRELIGHT);
+	layout->set_font_description(styleCtx->get_font());
+	styleCtx->render_background(cr, 200, 400, w, h);
+	styleCtx->render_frame(cr, 200, 400, w, h);
+	styleCtx->render_focus(cr, 200, 400, w, h);
+	styleCtx->render_layout(cr, 200+ ((w - tw)/2), 400 + ((h - th) /2), layout);
 
-	// some cairo toy-rendered text
-	cr->move_to(400, 200);
-	cr->set_source_rgb(0.1, 0.1, 0.1);
-	cr->select_font_face("Noto Sans", Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_NORMAL);
-	cr->set_font_size(10);
-	cr->show_text("Hello World!");
 
-	// some pango text
-	cr->move_to(400, 400);
-	auto layout = Pango::Layout::create(cr);
-	layout->set_text("Hello World!");
-	layout->set_font_description(Pango::FontDescription("Noto Sans 10"));
-	layout->show_in_cairo_context(cr);
+	// +active
+	styleCtx->set_state(StateFlags::STATE_FLAG_SELECTED | StateFlags::STATE_FLAG_PRELIGHT | StateFlags::STATE_FLAG_ACTIVE );
+	layout->set_font_description(styleCtx->get_font());
+	styleCtx->render_background(cr, 200, 500, w, h);
+	styleCtx->render_frame(cr, 200, 500, w, h);
+	styleCtx->render_focus(cr, 200, 500, w, h);
+	styleCtx->render_layout(cr, 200+ ((w - tw)/2), 500 + ((h - th) /2), layout);
+
 
 	// let's see what we've done
 	cs->write_to_png("/home/andy/out.png");
